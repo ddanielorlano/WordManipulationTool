@@ -16,10 +16,6 @@ namespace WordsMatch
         public MatchForm()
         {
             InitializeComponent();
-
-            MatchButton.Enabled = false;
-            matchesCount.Enabled = false;
-            ClearButton.Enabled = false;
             matchBox.ReadOnly = true;
         }
         private void MatchButton_Click(object sender, EventArgs e)
@@ -27,20 +23,20 @@ namespace WordsMatch
 
             string sourceText = sourceBox.Text;
             string otherText = otherBox.Text;
-            if (sourceText != null && otherText != null)
+            if (!string.IsNullOrWhiteSpace(sourceText) && !string.IsNullOrWhiteSpace(otherText))
             {
-                MatchButton.Enabled = true;
+                List<string> sourceWords, otherWords;
+
+                var matches = Matcher.Match(sourceText, otherText, out sourceWords, out otherWords);
+                matchBox.Text = String.Join(Environment.NewLine, matches);
+
+                sourceCount.Text = sourceWords.Count().ToString();
+                otherCount.Text = otherWords.Count().ToString();
+                matchesCount.Enabled = true;
+                matchesCount.Text = matches.Count().ToString();
             }
-            List<string> sourceWords, otherWords;
+           
 
-            var matches = Matcher.Match(sourceText,otherText,out sourceWords, out otherWords);
-            matchBox.Text = String.Join(Environment.NewLine, matches);
-
-            sourceCount.Text = sourceWords.Count().ToString();
-            otherCount.Text = otherWords.Count().ToString();
-            matchesCount.Enabled = true;
-            matchesCount.Text = matches.Count().ToString();
-            ClearButton.Enabled = true;
         }
         private void button1_Click(object sender, EventArgs e)
         {//Except
@@ -48,19 +44,15 @@ namespace WordsMatch
             string otherText = otherBox.Text;
             if (!string.IsNullOrWhiteSpace(sourceText) && !string.IsNullOrWhiteSpace(otherText))
             {
-                DifferenceButton.Enabled = true;
+                List<string> sourceWords, otherWords;
+
+                var result = Matcher
+                    .Difference(sourceText, otherText, out sourceWords, out otherWords);
+                matchesCount.Text = result.Count().ToString();
+                matchBox.Text = String.Join(Environment.NewLine, result);
+                sourceCount.Text = sourceWords.Count().ToString();
+                otherCount.Text = otherWords.Count().ToString();
             }
-            List<string> sourceWords, otherWords;
-
-            var intersection = Matcher.Difference(sourceText,otherText, out sourceWords, out otherWords);
-            matchBox.Text = String.Join(Environment.NewLine, intersection);
-
-            matchesCount.Enabled = true;
-            sourceCount.Text = sourceWords.Count().ToString();
-            otherCount.Text = otherWords.Count().ToString();
-            matchesCount.Text = intersection.Count().ToString();
-
-            ClearButton.Enabled = true;
         }
         private void SwapButton_Click(object sender, EventArgs e)
         {
@@ -79,31 +71,14 @@ namespace WordsMatch
         }
         private void ClearButton_Click(object sender, EventArgs e)
         {
-            Form form = this;
-            foreach (Control control in form.Controls)
-            {
-                if (control is TextBox)
-                {
-                    TextBox txtbox = (TextBox)control;
-                    txtbox.Text = string.Empty;
-                }
-                else if (control is CheckBox)
-                {
-                    CheckBox chkbox = (CheckBox)control;
-                    chkbox.Checked = false;
-                }
-                else if (control is RadioButton)
-                {
-                    RadioButton rdbtn = (RadioButton)control;
-                    rdbtn.Checked = false;
-                }
-                else if (control is Label)
-                {
-                    Label l = (Label)control;
-                    if (!l.Text.Contains("Paste"))
-                        l.Text = String.Empty;
-                }
-            }
+            sourceBox.Text = string.Empty;
+            otherBox.Text = string.Empty;
+            matchBox.Text = string.Empty;
+
+            sourceCount.Text = string.Empty;
+            otherCount.Text = string.Empty;
+            matchesCount.Text = string.Empty;
+
         }
         private void SourceTextBox_TextChanged(object sender, EventArgs e)
         {
@@ -124,23 +99,49 @@ namespace WordsMatch
             else if (!string.IsNullOrWhiteSpace(sourceWords))
             {
                 var result = Formatter.AddToWord(sourceWords, before, after);
-                formatterOtherBox.Text = String.Join(Environment.NewLine, result);
+                formatterOtherBox.Text = String.Join(" ", result);
             }
         }
 
         private void removeBtn_Click(object sender, EventArgs e)
         {
             var toRemove = removeBox.Text;
-            
             var sourceText = formatterSourceBox.Text;
+
             if (!string.IsNullOrWhiteSpace(toRemove) && !string.IsNullOrWhiteSpace(sourceText))
             {
-                var delimeters = toRemove
-                    .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Cast<char>().ToArray();
-                var result = Formatter.RemoveFromWords(toRemove,delimeters);
-                formatterOtherBox.Text = string.Join(Environment.NewLine, result);
+
+                try
+                {
+                    var delimeters = toRemove
+                  .Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                  .Select(x => Convert.ToChar(x)).ToArray();
+                    var result = Formatter.RemoveFromWords(sourceText, delimeters);
+                    formatterOtherBox.Text = string.Join(" ", result);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
             }
         }
+        private void swapBtn_Click(object sender, EventArgs e)
+        {
+            var source = formatterSourceBox.Text;
+            var other = formatterOtherBox.Text;
+            formatterSourceBox.Text = other;
+            formatterOtherBox.Text = source;
+        }
+
+        private void clearBtn_Click(object sender, EventArgs e)
+        {
+            formatterSourceBox.Text = "";
+            formatterOtherBox.Text = "";
+        }
+        private void removeBox_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+       
     }
 }

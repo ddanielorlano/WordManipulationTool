@@ -19,7 +19,8 @@ namespace WordsMatch
         {
             return string.IsNullOrWhiteSpace(words) ? null :
              words.Split(dels, StringSplitOptions.RemoveEmptyEntries)
-                .OrderBy(x => x).ToList();
+             .Where(x=> !string.IsNullOrWhiteSpace(x))
+             .ToList();
         }
     }
 }
