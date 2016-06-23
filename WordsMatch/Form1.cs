@@ -142,6 +142,27 @@ namespace WordsMatch
         {
 
         }
-       
+
+        private void sourcePastBtn_Click(object sender, EventArgs e)
+        {
+            var clip = Clipboard.GetText();
+            sourceBox.Text = clip;
+        }
+
+        private void otherPasteBtn_Click(object sender, EventArgs e)
+        {
+            var clip = Clipboard.GetText();
+            otherBox.Text = clip;
+        }
+
+        private void formatterPasteBtn_Click(object sender, EventArgs e)
+        {
+            formatterSourceBox.Text = Clipboard.GetText();
+        }
+
+        private void formatterCopyBtn_Click(object sender, EventArgs e)
+        {
+            Clipboard.SetText(formatterOtherBox.Text);
+        }
     }
 }
