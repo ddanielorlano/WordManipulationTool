@@ -162,7 +162,10 @@ namespace WordsMatch
 
         private void formatterCopyBtn_Click(object sender, EventArgs e)
         {
-            Clipboard.SetText(formatterOtherBox.Text);
+            var text = formatterOtherBox.Text;
+            if (!string.IsNullOrWhiteSpace(text)){
+                Clipboard.SetText(text);
+            }
         }
     }
 }
